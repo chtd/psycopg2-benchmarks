@@ -16,15 +16,13 @@ def run_all(size):
     '''
     assert User.objects.all().count() == 0
     assert Post.objects.all().count() == 0
-    bulk_insert(size)
-    many_inserts(size)
-    many_updates(size)
-    many_selects()
-    select_all()
-    select_all_values_list()
+    deco = print_time(profile=True)
+    for create_fn in (bulk_insert, many_inserts, many_updates):
+        deco(create_fn)(size)
+    for select_fn in (many_selects, select_all, select_all_values_list):
+        deco(select_fn)()
 
 
-@print_time
 def bulk_insert(size):
     ''' Create a lot of object in bulk
     '''
@@ -43,7 +41,6 @@ def bulk_insert(size):
     Post.objects.bulk_create(post_list)
 
 
-@print_time
 def many_inserts(size):
     ''' Create one object at a time
     '''
@@ -57,7 +54,6 @@ def many_inserts(size):
         post.save()
 
 
-@print_time
 def many_updates(size):
     ''' Update one object at a time
     '''
@@ -69,7 +65,6 @@ def many_updates(size):
         post.save()
 
 
-@print_time
 def select_all():
     ''' Create a list with all objects
     '''
@@ -78,7 +73,6 @@ def select_all():
         so_many_posts.extend(Post.objects.all())
 
 
-@print_time
 def select_all_values_list():
     ''' Get all objects with .values_list - less django overhead
     '''
@@ -88,7 +82,6 @@ def select_all_values_list():
             .values_list('id', 'title', 'text', 'updated_at')))
 
 
-@print_time
 def many_selects():
     ''' Trigger queries by accessing ForeignKey field
     '''
