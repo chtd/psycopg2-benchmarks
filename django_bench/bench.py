@@ -26,55 +26,111 @@ def print_time(fn):
 
 
 @print_time
-def bulk_insert(n_objects=1000):
+def bulk_insert(size):
     ''' Create a lot of object in bulk
     '''
-    users, posts = [], []
+    n_objects = size
     now = datetime.now()
+    user_list, post_list = [], []
     for i in xrange(n_objects):
-        dt = now - timedelta(seconds=random.randint(0, 1000))
-        user = User(username='user %d' % (i + 1,))
-        post = Post(
-                title='A post by user %d' % (i + 1,),
-                text='a long long text' * 10,
-                created_at=dt,
-                updated_at=dt,
-                author=user)
+        user, post = new_user_post(i, now)
+        user_list.append(user)
+        post_list.append(post)
+    User.objects.bulk_create(post_list)
+    Post.objects.bulk_create(user_list)
 
-    pass # TODO
+
+def new_user_post(i, now):
+    ''' Create new User and Post instances without saving them
+    '''
+    username = 'user %d' % (i + 1,)
+    dt = now - timedelta(seconds=random.randint(0, 1000))
+    user = User(username=username)
+    post = Post(
+            title='A post by ' + username,
+            text='a long long text' * 10,
+            created_at=dt,
+            updated_at=dt,
+            author=user)
+    return user, post
 
 
 @print_time
-def many_inserts(n_objects=300):
+def many_inserts(size):
     ''' Create one object at a time
     '''
-    pass # TODO
+    n_objects = size / 10
+    now = datetime.now()
+    user_list, post_list = [], []
+    for i in xrange(n_objects):
+        user, post = new_user_post(i, now)
+        user.save()
+        post.save()
 
 
 @print_time
-def many_updates(n_objects=300):
+def many_updates(size):
     ''' Update one object at a time
     '''
-    pass # TODO
+    n_objects = size / 10
+    now = datetime.now()
+    for post in Post.objects.all()[:n_objects]:
+        post.updated_at = now
+        post.name += ' (2)'
+        post.save()
 
 
 @print_time
 def select_all():
     ''' Create a list with all objects
     '''
-    return list(Post.objects.all())
+    so_many_posts = []
+    for _ in xrange(10):
+        so_many_posts.extend(Post.objects.all())
 
 
 @print_time
 def select_all_values_list():
     ''' Get all objects with .values_list - less django overhead
     '''
-    return list(Post.objects.all()\
-            .values_list('id', 'name', 'comment', 'created_at', 'updated_at'))
+    so_many_posts = []
+    for _ in xrange(20):
+        so_many_posts.extend((Post.objects.all()\
+            .values_list('id', 'name', 'comment', 'created_at', 'updated_at')))
 
 
 @print_time
-def many_selects(n_objects=300):
+def many_selects():
     ''' Trigger queries by accessing ForeignKey field
     '''
     return [post.user for post in Post.objects.all()]
+
+
+def run_all(size):
+    ''' Run all benchmarks. Assumes empty DB
+    '''
+    assert User.objects.all().count() == 0
+    assert Post.objects.all().count() == 0
+    bulk_insert(size)
+    many_inserts(size)
+    many_updates(size)
+    many_selects()
+    select_all()
+    select_all_values_list()
+
+
+def cli():
+    usage = 'usage: ./bench.py 1000, or some other job size'
+    if len(sys.argv) != 2:
+        print usage
+    else:
+        try:
+            size = int(sys.argv[1])
+        except ValueError:
+            print usage
+        else:
+            run_all(size)
+
+
+if __name__ == '__main__':
+    cli()
