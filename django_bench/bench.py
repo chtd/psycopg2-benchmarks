@@ -32,26 +32,38 @@ def bulk_insert(size):
     n_objects = size
     now = datetime.now()
     user_list, post_list = [], []
-    for i in xrange(n_objects):
-        user, post = new_user_post(i, now)
+    user_ids, post_ids = [bulk_ids(m, n_objects) for m in (User, Post)]
+    for i, user_id, post_id in zip(
+            xrange(1, n_objects + 1), user_ids, post_ids):
+        user, post = new_user_post(i, now, 'bulk')
+        user.id = user_id
+        post.author = user
         user_list.append(user)
         post_list.append(post)
-    User.objects.bulk_create(post_list)
-    Post.objects.bulk_create(user_list)
+    User.objects.bulk_create(user_list)
+    Post.objects.bulk_create(post_list)
 
 
-def new_user_post(i, now):
+def bulk_ids(model, n):
+    from django.db import connection
+    cursor = connection.cursor()
+    sql = "select nextval('%s_id_seq') from generate_series(1,%d)" % \
+            (model._meta.db_table, n)
+    cursor.execute(sql)
+    return [int(r[0]) for r in cursor]
+
+
+def new_user_post(i, now, prefix):
     ''' Create new User and Post instances without saving them
     '''
-    username = 'user %d' % (i + 1,)
+    username = '%s user %d' % (prefix, i)
     dt = now - timedelta(seconds=random.randint(0, 1000))
     user = User(username=username)
     post = Post(
             title='A post by ' + username,
             text='a long long text' * 10,
             created_at=dt,
-            updated_at=dt,
-            author=user)
+            updated_at=dt)
     return user, post
 
 
@@ -63,8 +75,9 @@ def many_inserts(size):
     now = datetime.now()
     user_list, post_list = [], []
     for i in xrange(n_objects):
-        user, post = new_user_post(i, now)
+        user, post = new_user_post(i, now, 'single')
         user.save()
+        post.author = user
         post.save()
 
 
@@ -76,7 +89,7 @@ def many_updates(size):
     now = datetime.now()
     for post in Post.objects.all()[:n_objects]:
         post.updated_at = now
-        post.name += ' (2)'
+        post.title += ' (2)'
         post.save()
 
 
@@ -96,14 +109,15 @@ def select_all_values_list():
     so_many_posts = []
     for _ in xrange(20):
         so_many_posts.extend((Post.objects.all()\
-            .values_list('id', 'name', 'comment', 'created_at', 'updated_at')))
+            .values_list('id', 'title', 'text', 'updated_at')))
 
 
 @print_time
 def many_selects():
     ''' Trigger queries by accessing ForeignKey field
     '''
-    return [post.user for post in Post.objects.all()]
+    posts = list(Post.objects.all())
+    return [post.author for post in posts[: (len(posts) / 4) ]]
 
 
 def run_all(size):

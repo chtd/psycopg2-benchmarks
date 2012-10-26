@@ -3,8 +3,10 @@ import getpass
 
 DEBUG = False
 INSTALLED_APPS = [
-    'django.contrib.auth',
-    'app',
+        'django.contrib.contenttypes', 
+        'django.contrib.auth',
+        'django_extensions',
+        'app',
     ]
 
 DB_USER = os.environ.get('DB_USER', getpass.getuser())
