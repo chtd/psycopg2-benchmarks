@@ -1,12 +1,13 @@
+import os
+import getpass
+
 DEBUG = False
 INSTALLED_APPS = [
     'django.contrib.auth',
     'app',
     ]
 
-import getpass
-
-DB_USER = getpass.getuser()
+DB_USER = os.environ.get('DB_USER', getpass.getuser())
 
 DATABASES = {                                                                  
     'default': {                                                               
