@@ -4,25 +4,24 @@ import os, sys
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 sys.path.append('.')
 
-import time
 import random
 from datetime import datetime, timedelta
-from functools import wraps
 
 from app.models import Post, User
+from utils import print_time, bulk_ids
 
 
-def print_time(fn):
-    ''' Print how much time the function took
+def run_all(size):
+    ''' Run all benchmarks. Assumes empty DB
     '''
-    @wraps(fn)
-    def inner(*args, **kwargs):
-        start = time.time()
-        try:
-            return fn(*args, **kwargs)
-        finally:
-            print fn.__name__, time.time() - start, 's'
-    return inner
+    assert User.objects.all().count() == 0
+    assert Post.objects.all().count() == 0
+    bulk_insert(size)
+    many_inserts(size)
+    many_updates(size)
+    many_selects()
+    select_all()
+    select_all_values_list()
 
 
 @print_time
@@ -42,29 +41,6 @@ def bulk_insert(size):
         post_list.append(post)
     User.objects.bulk_create(user_list)
     Post.objects.bulk_create(post_list)
-
-
-def bulk_ids(model, n):
-    from django.db import connection
-    cursor = connection.cursor()
-    sql = "select nextval('%s_id_seq') from generate_series(1,%d)" % \
-            (model._meta.db_table, n)
-    cursor.execute(sql)
-    return [int(r[0]) for r in cursor]
-
-
-def new_user_post(i, now, prefix):
-    ''' Create new User and Post instances without saving them
-    '''
-    username = '%s user %d' % (prefix, i)
-    dt = now - timedelta(seconds=random.randint(0, 1000))
-    user = User(username=username)
-    post = Post(
-            title='A post by ' + username,
-            text='a long long text' * 10,
-            created_at=dt,
-            updated_at=dt)
-    return user, post
 
 
 @print_time
@@ -120,17 +96,18 @@ def many_selects():
     return [post.author for post in posts[: (len(posts) / 4) ]]
 
 
-def run_all(size):
-    ''' Run all benchmarks. Assumes empty DB
+def new_user_post(i, now, prefix):
+    ''' Create new User and Post instances without saving them
     '''
-    assert User.objects.all().count() == 0
-    assert Post.objects.all().count() == 0
-    bulk_insert(size)
-    many_inserts(size)
-    many_updates(size)
-    many_selects()
-    select_all()
-    select_all_values_list()
+    username = '%s user %d' % (prefix, i)
+    dt = now - timedelta(seconds=random.randint(0, 1000))
+    user = User(username=username)
+    post = Post(
+            title='A post by ' + username,
+            text='a long long text' * 10,
+            created_at=dt,
+            updated_at=dt)
+    return user, post
 
 
 def cli():
