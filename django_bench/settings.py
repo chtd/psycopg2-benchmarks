@@ -1,5 +1,8 @@
 DEBUG = False
-INSTALLED_APPS = ['app']
+INSTALLED_APPS = [
+    'django.contrib.auth',
+    'app',
+    ]
 
 import getpass
 
