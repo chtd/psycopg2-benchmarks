@@ -3,8 +3,8 @@ from functools import wraps
 import traceback
 
 
-def print_time(*deco_args, **deco_kwargs):
-    ''' Print function execution time.
+def measure_time(*deco_args, **deco_kwargs):
+    ''' Print function execution time, and return it.
     Supports additional profiling:
     profile = True  - using profilehooks (uses cProfile),
     stat_profile = True - using statprof
@@ -22,10 +22,11 @@ def print_time(*deco_args, **deco_kwargs):
                 statprof.reset(frequency=10000)
                 statprof.start()
             try:
-                return fn(*args, **kwargs)
+                fn(*args, **kwargs)
+                fn_time = time.time() - start
+                return fn_time
             finally:
-                print 'finished %s in %s s' % \
-                        (fn.__name__, time.time() - start)
+                print 'finished %s in %s s' % (fn.__name__, fn_time)
                 if stat_profile:
                     statprof.stop()
                     statprof.display()

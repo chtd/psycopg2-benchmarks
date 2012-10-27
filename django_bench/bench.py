@@ -8,7 +8,7 @@ import random
 from datetime import datetime, timedelta
 
 from app.models import Post, User
-from utils import print_time, bulk_ids
+from utils import measure_time, bulk_ids
 
 
 def run_all(size):
@@ -16,11 +16,13 @@ def run_all(size):
     '''
     assert User.objects.all().count() == 0
     assert Post.objects.all().count() == 0
-    deco = print_time(profile=True)
+    deco = measure_time #(stat_profile=True)
+    total_time = 0.0
     for create_fn in (bulk_insert, many_inserts, many_updates):
-        deco(create_fn)(size)
+        total_time += deco(create_fn)(size)
     for select_fn in (many_selects, select_all, select_all_values_list):
-        deco(select_fn)()
+        total_time += deco(select_fn)()
+    print total_time, 's'
 
 
 def bulk_insert(size):

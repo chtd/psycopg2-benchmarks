@@ -1,2 +1,4 @@
 django==1.4
 django-extensions==1.0.0
+profilehooks
+statprof
