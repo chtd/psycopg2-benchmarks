@@ -115,7 +115,9 @@ def cli():
         except ValueError:
             print usage
         else:
-            run_all(size)
+            for _ in xrange(9): # giving PyPY JIT time to warm up
+                run_all(size)
+                User.objects.all().delete()
 
 
 if __name__ == '__main__':
