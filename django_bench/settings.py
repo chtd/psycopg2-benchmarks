@@ -9,6 +9,7 @@ INSTALLED_APPS = [
         'app',
     ]
 
+TIME_ZONE = ''
 DB_USER = os.environ.get('DB_USER', getpass.getuser())
 
 DATABASES = {                                                                  
@@ -17,7 +18,7 @@ DATABASES = {
         'NAME': 'psycopg2_cffi_test_db',                                                 
         'USER': DB_USER,                                                      
         'PASSWORD': '',                                                        
-        'HOST': '',                                                            
+        'HOST': 'localhost',                                                            
         'PORT': '',                                                            
         }, 
     }

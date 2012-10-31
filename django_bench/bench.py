@@ -20,7 +20,8 @@ def run_all(size):
     total_time = 0.0
     for create_fn in (bulk_insert, many_inserts, many_updates):
         total_time += deco(create_fn)(size)
-    for select_fn in (many_selects, select_all, select_all_values_list):
+    for select_fn in (many_selects, select_all, select_all_values_list,
+            cursor_fetchall):
         total_time += deco(select_fn)()
     print total_time, 's'
 
@@ -82,6 +83,18 @@ def select_all_values_list():
     for _ in xrange(20):
         so_many_posts.extend((Post.objects.all()\
             .values_list('id', 'title', 'text', 'updated_at')))
+
+
+def cursor_fetchall():
+    ''' Get all objects with cursor.fetchall, without django
+    '''
+    from django.db import connection
+    cursor = connection.cursor()
+    so_many_posts = []
+    for _ in xrange(20):
+        cursor.execute('select * from app_post;')
+        so_many_posts.extend(cursor.fetchall())
+    return so_many_posts
 
 
 def many_selects():

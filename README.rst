@@ -9,10 +9,12 @@ This is a tiny django benchmark, that measures some common operations:
 * querying objects one at a time (accessing ForeignKey field)
 * selecting a lot of objects using ``model.objects.all``
 * selecting a lot of objects using ``model.objects.all().values_list``
+* selecting a lot of objects using ``cursor.fetchall``
 
 The goal is not to measure the raw speed
 of Postgres bindings, but to evaluate them in a way similar to the way
-they are used in real-life web applications.
+they are used in real-life web applications. Although ``cursor.fetchall``
+benchmark does not use Django directly.
 
 A write-up with benchmark results lives here **TODO**
 
