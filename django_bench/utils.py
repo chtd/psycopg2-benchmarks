@@ -21,15 +21,13 @@ def measure_time(*deco_args, **deco_kwargs):
                 import statprof
                 statprof.reset(frequency=10000)
                 statprof.start()
-            try:
-                fn(*args, **kwargs)
-                fn_time = time.time() - start
-                return fn_time
-            finally:
-                print 'finished %s in %s s' % (fn.__name__, fn_time)
-                if stat_profile:
-                    statprof.stop()
-                    statprof.display()
+            fn(*args, **kwargs)
+            fn_time = time.time() - start
+            print 'finished %s in %s s' % (fn.__name__, fn_time)
+            if stat_profile:
+                statprof.stop()
+                statprof.display()
+            return fn_time
         if deco_kwargs.get('profile'):
             import profilehooks
             inner = profilehooks.profile(immediate=True)(inner)
