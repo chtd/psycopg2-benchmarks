@@ -63,7 +63,7 @@ def many_updates(size):
     n_objects = size / 10
     now = datetime.now()
     for post in Post.objects.all()[:n_objects]:
-        post.updated_at = now
+        post.created_at = now
         post.title += ' (2)'
         post.save()
 
@@ -82,7 +82,7 @@ def select_all_values_list():
     so_many_posts = []
     for _ in xrange(20):
         so_many_posts.extend((Post.objects.all()\
-            .values_list('id', 'title', 'text', 'updated_at')))
+            .values_list('id', 'title', 'text', 'created_at')))
 
 
 def cursor_fetchall():
@@ -113,8 +113,7 @@ def new_user_post(i, now, prefix):
     post = Post(
             title='A post by ' + username,
             text='a long long text' * 10,
-            created_at=dt,
-            updated_at=dt)
+            created_at=dt)
     return user, post
 
 
