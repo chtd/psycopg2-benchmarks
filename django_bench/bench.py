@@ -20,7 +20,8 @@ def run_all(size):
     total_time = 0.0
     for create_fn in (bulk_insert, many_inserts, many_updates):
         total_time += deco(create_fn)(size)
-    for select_fn in (many_selects, select_all, select_all_values_list,
+    for select_fn in (many_selects, select_all, 
+            # select_all_values_list, # measures the same as cursor_fetchall
             cursor_fetchall):
         total_time += deco(select_fn)()
     print total_time, 's'
@@ -62,9 +63,11 @@ def many_updates(size):
     '''
     n_objects = size / 10
     now = datetime.now()
-    for post in Post.objects.all()[:n_objects]:
+    for i, post in enumerate(Post.objects.all()[:n_objects]):
         post.created_at = now
         post.title += ' (2)'
+        if i % 2:
+            post.author = None
         post.save()
 
 
@@ -101,7 +104,7 @@ def many_selects():
     ''' Trigger queries by accessing ForeignKey field
     '''
     posts = list(Post.objects.all())
-    return [post.author for post in posts[: (len(posts) / 4) ]]
+    return [post.author for post in posts[: (len(posts) / 2) ]]
 
 
 def new_user_post(i, now, prefix):
@@ -130,6 +133,7 @@ def cli():
             for _ in xrange(9): # giving PyPY JIT time to warm up
                 run_all(size)
                 User.objects.all().delete()
+                Post.objects.all().delete()
 
 
 if __name__ == '__main__':
