@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import time
 from functools import wraps
 import traceback
@@ -14,7 +16,7 @@ def measure_time(*deco_args, **deco_kwargs):
         def inner(*args, **kwargs):
             if deco_kwargs.get('traceback'):
                 traceback.print_stack()
-            print 'starting %s' % fn.__name__
+            print('starting %s' % fn.__name__)
             start = time.time()
             stat_profile = deco_kwargs.get('stat_profile')
             if stat_profile:
@@ -23,7 +25,7 @@ def measure_time(*deco_args, **deco_kwargs):
                 statprof.start()
             fn(*args, **kwargs)
             fn_time = time.time() - start
-            print 'finished %s in %s s' % (fn.__name__, fn_time)
+            print('finished %s in %s s' % (fn.__name__, fn_time))
             if stat_profile:
                 statprof.stop()
                 statprof.display()

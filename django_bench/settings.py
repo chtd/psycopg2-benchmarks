@@ -9,8 +9,15 @@ INSTALLED_APPS = [
         'app',
     ]
 
+try:
+    from psycopg2cffi import compat
+    compat.register()
+except ImportError:
+    pass
+
 TIME_ZONE = ''
 DB_USER = os.environ.get('DB_USER', getpass.getuser())
+SECRET_KEY = 'not so secret'
 
 DATABASES = {                                                                  
     'default': {                                                               

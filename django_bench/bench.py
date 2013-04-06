@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import os, sys
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 sys.path.append('.')
 
 import random
 from datetime import datetime, timedelta
+from six.moves import xrange
 
 from app.models import Post, User
 from utils import measure_time, bulk_ids
@@ -24,7 +27,7 @@ def run_all(size):
             # select_all_values_list, # measures the same as cursor_fetchall
             cursor_fetchall):
         total_time += deco(select_fn)()
-    print total_time, 's'
+    print(total_time, 's')
 
 
 def bulk_insert(size):
@@ -48,7 +51,7 @@ def bulk_insert(size):
 def many_inserts(size):
     ''' Create one object at a time
     '''
-    n_objects = size / 10
+    n_objects = size // 10
     now = datetime.now()
     user_list, post_list = [], []
     for i in xrange(n_objects):
@@ -61,7 +64,7 @@ def many_inserts(size):
 def many_updates(size):
     ''' Update one object at a time
     '''
-    n_objects = size / 10
+    n_objects = size // 10
     now = datetime.now()
     for i, post in enumerate(Post.objects.all()[:n_objects]):
         post.created_at = now
@@ -104,7 +107,7 @@ def many_selects():
     ''' Trigger queries by accessing ForeignKey field
     '''
     posts = list(Post.objects.all())
-    return [post.author for post in posts[: (len(posts) / 2) ]]
+    return [post.author for post in posts[: (len(posts) // 2) ]]
 
 
 def new_user_post(i, now, prefix):
@@ -123,12 +126,12 @@ def new_user_post(i, now, prefix):
 def cli():
     usage = 'usage: ./bench.py 1000, or some other job size'
     if len(sys.argv) != 2:
-        print usage
+        print(usage)
     else:
         try:
             size = int(sys.argv[1])
         except ValueError:
-            print usage
+            print(usage)
         else:
             for _ in xrange(9): # giving PyPY JIT time to warm up
                 run_all(size)
