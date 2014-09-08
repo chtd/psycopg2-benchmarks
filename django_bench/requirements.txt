@@ -1,4 +1,4 @@
-django==1.5
+django==1.6.7
 six
 # django-extensions==1.0.0
 -e git+https://github.com/django-extensions/django-extensions.git#egg=django_extensions
