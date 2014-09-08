@@ -23,7 +23,7 @@ def run_all(size):
     total_time = 0.0
     for create_fn in (bulk_insert, many_inserts, many_updates):
         total_time += deco(create_fn)(size)
-    for select_fn in (many_selects, select_all, 
+    for select_fn in (many_selects, select_all,
             # select_all_values_list, # measures the same as cursor_fetchall
             cursor_fetchall):
         total_time += deco(select_fn)()
@@ -133,7 +133,7 @@ def cli():
         except ValueError:
             print(usage)
         else:
-            for _ in xrange(9): # giving PyPY JIT time to warm up
+            for _ in xrange(20): # giving PyPY JIT time to warm up
                 run_all(size)
                 User.objects.all().delete()
                 Post.objects.all().delete()
