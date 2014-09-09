@@ -124,16 +124,20 @@ def new_user_post(i, now, prefix):
 
 
 def cli():
-    usage = 'usage: ./bench.py 1000, or some other job size'
-    if len(sys.argv) != 2:
-        print(usage)
+    usage = 'usage: ./bench.py <job size> <number of runs>'
+    if len(sys.argv) not in [2, 3]:
+        sys.exit(usage)
     else:
         try:
             size = int(sys.argv[1])
+            if len(sys.argv) == 3:
+                warmup = int(sys.argv[2])
+            else:
+                warmup = 10
         except ValueError:
-            print(usage)
+            sys.exit(usage)
         else:
-            for _ in xrange(20): # giving PyPY JIT time to warm up
+            for _ in xrange(warmup): # giving PyPY JIT time to warm up
                 run_all(size)
                 User.objects.all().delete()
                 Post.objects.all().delete()
